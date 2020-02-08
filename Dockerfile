@@ -17,8 +17,9 @@ RUN mix local.hex --force \
 
 ENV APP_HOME /app
 RUN mkdir -p $APP_HOME
+COPY entrypoint.sh /.
 WORKDIR $APP_HOME
 
 EXPOSE 4000
 
-CMD ["mix", "phx.server"]
+CMD /entrypoint.sh
