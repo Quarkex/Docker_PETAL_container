@@ -79,10 +79,10 @@ if [ "$MIX_ENV" == "prod" ]; then
   mix deps.get --only "$MIX_ENV"
   npm run deploy --prefix ./assets
   mix phx.digest
-  if [ ! "$DB_NAME" == "" ]; then
+fi
+if [ ! "$DB_NAME" == "" ]; then
     mix ecto.setup
     mix ecto.migrate
-  fi
 fi
 mix compile
 exec mix phx.server
