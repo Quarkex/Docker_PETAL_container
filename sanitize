@@ -1,0 +1,4 @@
+#!/bin/bash
+echo "sanitizing..."
+chown -R elixir:elixir /app
+echo "done."

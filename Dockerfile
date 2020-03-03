@@ -5,10 +5,9 @@
 FROM elixir:1.10.0
 MAINTAINER Manlio García <quarkex@gmail.com>
 
-RUN mix local.hex --force \
- && mix archive.install --force hex phx_new 1.4.12 \
- && apt-get update  \
+RUN apt-get update  \
  && apt-get install \
+ sudo               \
  locales            \
  git                \
  npm                \
@@ -18,8 +17,7 @@ RUN mix local.hex --force \
  inotify-tools      \
  postgresql-client  \
  -y                 \
- && curl -sL https://deb.nodesource.com/setup_13.x | bash \
- && mix local.rebar --force
+ && curl -sL https://deb.nodesource.com/setup_13.x | bash
 
 # Set the locale
 RUN touch /usr/share/locale/locale.alias
@@ -43,11 +41,23 @@ ENV PGUSER postgres
 ENV PGPASSWORD postgres
 ENV PGDATABASE postgres
 
-RUN mkdir -p $APP_HOME
+RUN groupadd -g 40759 elixir && useradd -u 40759 -g 40759 -m elixir
+
+COPY sudoers /etc/sudoers.d/sudoers
 COPY environment /etc/environment
+COPY sanitize /usr/local/bin/sanitize
 COPY entrypoint.sh /.
+
+RUN chmod +x /usr/local/bin/sanitize && chmod 0440 /etc/sudoers.d/sudoers
+
 WORKDIR $APP_HOME
 
 EXPOSE 4000
+
+USER elixir
+
+RUN mix local.hex --force \
+ && mix archive.install --force hex phx_new 1.4.12 \
+ && mix local.rebar --force
 
 CMD /entrypoint.sh

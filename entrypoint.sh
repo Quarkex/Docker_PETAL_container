@@ -8,6 +8,8 @@ export PGDATABASE="${DB_NAME:=$PGDATABASE}"
 export DATABASE_URL="${DATABASE_URL:=ecto://$PGUSER:$PGPASSWORD@$PGHOST/$PGDATABASE}"
 export MIX_ENV="${MIX_ENV:=dev}"
 
+sudo /usr/local/bin/sanitize
+
 cd $APP_HOME
 if [ ! -f mix.exs ]; then
 
