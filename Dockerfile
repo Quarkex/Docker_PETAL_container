@@ -16,6 +16,7 @@ RUN apt-get update  \
  build-essential    \
  inotify-tools      \
  postgresql-client  \
+ libcap2-bin        \
  -y                 \
  && curl -sL https://deb.nodesource.com/setup_13.x | bash
 
@@ -27,6 +28,11 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
+
+# Enable low ports for erlang
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.6.4/bin/erlexec
+# Enable low ports for beam
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.6.4/bin/beam.smp
 
 ENV APP_HOME /app
 ENV APP_NAME sample_app
