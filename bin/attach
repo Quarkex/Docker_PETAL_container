@@ -1,0 +1,2 @@
+#!/bin/bash
+iex --sname $(date -u +%Y%m%d%H%M%S) --cookie "${ERLANG_COOKIE:-app}" --remsh "app@$HOSTNAME"

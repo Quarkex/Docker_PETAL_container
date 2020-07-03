@@ -51,10 +51,10 @@ RUN groupadd -g 40759 elixir && useradd -u 40759 -g 40759 -m elixir
 
 COPY sudoers /etc/sudoers.d/sudoers
 COPY environment /etc/environment
-COPY sanitize /usr/local/bin/sanitize
+COPY bin/* /usr/local/bin/
 COPY entrypoint.sh /.
 
-RUN chmod +x /usr/local/bin/sanitize && chmod 0440 /etc/sudoers.d/sudoers
+RUN chmod +x /usr/local/bin/* && chmod 0440 /etc/sudoers.d/sudoers
 
 WORKDIR $APP_HOME
 
