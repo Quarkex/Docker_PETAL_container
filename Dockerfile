@@ -1,5 +1,5 @@
   #################
- # phoenix 1.4.0 #
+ # phoenix 1.5.0 #
 #################
 
 FROM elixir:1.10.3
@@ -63,7 +63,7 @@ EXPOSE 4000
 USER elixir
 
 RUN mix local.hex --force \
- && mix archive.install --force hex phx_new 1.4.12 \
+ && mix archive.install --force hex phx_new 1.5.0 \
  && mix local.rebar --force
 
 CMD /entrypoint.sh
