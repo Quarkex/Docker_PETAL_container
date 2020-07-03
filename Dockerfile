@@ -18,7 +18,7 @@ RUN apt-get update  \
  postgresql-client  \
  libcap2-bin        \
  -y                 \
- && curl -sL https://deb.nodesource.com/setup_13.x | bash
+ && curl -sL https://deb.nodesource.com/setup_14.x | bash
 
 # Set the locale
 RUN touch /usr/share/locale/locale.alias
@@ -30,9 +30,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Enable low ports for erlang
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2/bin/erlexec
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.1/bin/erlexec
 # Enable low ports for beam
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2/bin/beam.smp
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.1/bin/beam.smp
 
 ENV APP_HOME /app
 ENV APP_NAME sample_app
