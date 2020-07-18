@@ -1,2 +1,2 @@
 #!/bin/bash
-iex --name "$(date -u +%Y%m%d%H%M%S)@${DOMAIN:-${HOSTNAME:-localhost}}" --cookie "${ERLANG_COOKIE:-app}" --remsh "app@$HOSTNAME"
+iex --name "$(date -u +%Y%m%d%H%M%S)@${DOMAIN:-${HOSTNAME:-localhost}}" --cookie "${ERLANG_COOKIE:-app}" --remsh "app@${DOMAIN:-${HOSTNAME:-localhost}}"
