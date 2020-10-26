@@ -1,24 +1,23 @@
   #################
- # phoenix 1.5.0 #
+ # phoenix 1.5.6 #
 #################
 
-FROM elixir:1.10.3
+FROM elixir:1.10.4
 MAINTAINER Manlio García <quarkex@gmail.com>
 
-RUN apt-get update  \
+RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - \
+ && apt-get update  \
  && apt-get install \
  sudo               \
  locales            \
  git                \
- npm                \
  apt-utils          \
  nodejs             \
  build-essential    \
  inotify-tools      \
  postgresql-client  \
  libcap2-bin        \
- -y                 \
- && curl -sL https://deb.nodesource.com/setup_14.x | bash
+ -y
 
 # Set the locale
 RUN touch /usr/share/locale/locale.alias
@@ -30,9 +29,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Enable low ports for erlang
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.1/bin/erlexec
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.5/bin/erlexec
 # Enable low ports for beam
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.1/bin/beam.smp
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.5/bin/beam.smp
 
 ENV APP_HOME /app
 ENV APP_NAME sample_app
@@ -63,7 +62,7 @@ EXPOSE 4000
 USER elixir
 
 RUN mix local.hex --force \
- && mix archive.install --force hex phx_new 1.5.0 \
+ && mix archive.install --force hex phx_new 1.5.6 \
  && mix local.rebar --force
 
 CMD /entrypoint.sh
