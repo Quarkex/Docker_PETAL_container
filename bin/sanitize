@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "sanitizing..."
 chown -R elixir:elixir /app
+chmod -R og+rw /app
 if [ -f /bootstrap ]; then
   echo "bootstraping..."
   chmod +x /bootstrap
