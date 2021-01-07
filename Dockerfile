@@ -29,9 +29,9 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 # Enable low ports for erlang
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.5/bin/erlexec
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-*/bin/erlexec
 # Enable low ports for beam
-RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-10.7.2.5/bin/beam.smp
+RUN setcap 'cap_net_bind_service=+ep' /usr/local/lib/erlang/erts-*/bin/beam.smp
 
 ENV APP_HOME /app
 ENV APP_NAME sample_app
