@@ -27,37 +27,37 @@ if [ ! -f mix.exs ]; then
 
     echo "Linking config values to env variables..."
     sed -i \
-      -e 's/host: "[^"]*"/host: System.get_env("DOMAIN")/g' \
+      -e 's/host: "[^"]*"/host: System.get_env("DOMAIN") || "localhost"/g' \
         ./config/config.exs
 
     sed -i \
-      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT"))/g' \
+      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT") || "4000")/g' \
         ./config/dev.exs
 
     sed -i \
-      -e 's/host: "[^"]*"/host: System.get_env("DOMAIN")/g' \
-      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT"))/g' \
+      -e 's/host: "[^"]*"/host: System.get_env("DOMAIN") || "localhost"/g' \
+      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT") || "4000")/g' \
         ./config/prod.exs
 
     if [ ! "$DB_NAME" == "" ]; then
       sed -i \
-        -e 's/username: "[^"]*",/username: System.get_env("PGUSER"),/g' \
-        -e 's/password: "[^"]*",/password: System.get_env("PGPASSWORD"),/g' \
-        -e 's/database: "[^"]*",/database: System.get_env("PGDATABASE")<>"_dev",/g' \
-        -e 's/hostname: "[^"]*",/hostname: System.get_env("PGHOST"),\n  port: String.to_integer(System.get_env("PGPORT")),/g' \
+        -e 's/username: "[^"]*",/username: System.get_env("DB_USER") || "postgres",/g' \
+        -e 's/password: "[^"]*",/password: System.get_env("DB_PASS") || "postgres",/g' \
+        -e 's/database: "[^"]*",/database: (System.get_env("DB_NAME") || "phoenix")<>"_dev",/g' \
+        -e 's/hostname: "[^"]*",/hostname: System.get_env("DB_HOST") || "db",\n  port: String.to_integer(System.get_env("DB_PORT") || "5432"),/g' \
           ./config/dev.exs
 
       sed -i \
-        -e 's/port: [0-9]*/port: (String.to_integer(System.get_env("PORT")) + 2)/g' \
-        -e 's/username: "[^"]*",/username: System.get_env("PGUSER"),/g' \
-        -e 's/password: "[^"]*",/password: System.get_env("PGPASSWORD"),/g' \
-        -e 's/database: "[^"]*",/database: System.get_env("PGDATABASE")<>"_test",/g' \
-        -e 's/hostname: "[^"]*",/hostname: System.get_env("PGHOST"),\n  port: String.to_integer(System.get_env("PGPORT")),/g' \
+        -e 's/port: [0-9]*/port: (String.to_integer(System.get_env("PORT") || "5432") + 2)/g' \
+        -e 's/username: "[^"]*",/username: System.get_env("DB_USER") || "postgres",/g' \
+        -e 's/password: "[^"]*",/password: System.get_env("DB_PASS") || "postgres",/g' \
+        -e 's/database: "[^"]*",/database: (System.get_env("DB_NAME") || "phoenix")<>"_test",/g' \
+        -e 's/hostname: "[^"]*",/hostname: System.get_env("DB_HOST") || "db",\n  port: String.to_integer(System.get_env("DB_PORT") || "5432"),/g' \
           ./config/test.exs
     fi
 
     sed -i \
-      -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") %>";g' \
+      -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") || "en" %>";g' \
       -e 's;<title>.*</title>;<title><%= System.get_env("TITLE") %></title>;g' \
         ./lib/*_web/templates/layout/app.html.eex
 
