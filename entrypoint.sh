@@ -87,7 +87,7 @@ if [ ! -f mix.exs ]; then
     (cd assets && npm install --prefix assets --save-dev tailwindcss postcss postcss-loader autoprefixer)
 
     rm ./assets/css/phoenix.css \
-      && mv ./assets/css/phoenix.{s,}css \
+      && mv ./assets/css/app.{s,}css \
       && sed -i -e 's~import "../css/app.scss"~import "../css/app.css"~g' ./assets/js/app.js \
       && sed -i \
       -e 's~@import "./phoenix.css";~@tailwind base;\
