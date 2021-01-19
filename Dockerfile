@@ -62,7 +62,7 @@ EXPOSE 4000
 USER elixir
 
 RUN mix local.hex --force \
- && mix archive.install --force hex phx_new 1.5.6 \
+ && mix archive.install --force hex phx_new 1.5.7 \
  && mix local.rebar --force
 
 CMD /entrypoint.sh
