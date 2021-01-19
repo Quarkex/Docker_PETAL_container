@@ -63,8 +63,8 @@ if [ ! -f mix.exs ]; then
 
     sed -i \
       -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") || "en" %>";g' \
-      -e 's;<title>.*</title>;<title><%= System.get_env("TITLE") %></title>;g' \
-        ./lib/*_web/templates/layout/app.html.eex
+      -e 's;live_title_tag assigns\[:page_title\] || "[^"]*",;live_title_tag assigns[:page_title] || System.get_env("TITLE"),;g' \
+        ./lib/*_web/templates/layout/root.html.eex
 
     echo "Adding common dependencies..."
     sed -i \
