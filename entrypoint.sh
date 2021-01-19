@@ -20,14 +20,16 @@ if [ ! -f mix.exs ]; then
     echo "Creating new phoenix project named “${APP_NAME}”..."
 
     if [ "$DB_NAME" == "" ]; then
-      echo "y" | mix phx.new . --app "${APP_NAME}" --no-ecto &>/dev/null
+      echo "y" | mix phx.new . --app "${APP_NAME}" --no-ecto --live &>/dev/null
     else
-      echo "y" | mix phx.new . --app "${APP_NAME}" &>/dev/null
+      echo "y" | mix phx.new . --app "${APP_NAME}" --live &>/dev/null
     fi
 
     echo "Linking config values to env variables..."
     sed -i \
       -e 's/host: "[^"]*"/host: System.get_env("DOMAIN") || "localhost"/g' \
+      -e 's/secret_key_base: "[^"]*"/secret_key_base: System.get_env("SECRET_KEY_BASE") || ""/g' \
+      -e 's/signing_salt: "[^"]*"/signing_salt: System.get_env("LV_SIGNING_SALT") || ""/g' \
         ./config/config.exs
 
     sed -i \
@@ -61,6 +63,79 @@ if [ ! -f mix.exs ]; then
       -e 's;<title>.*</title>;<title><%= System.get_env("TITLE") %></title>;g' \
         ./lib/*_web/templates/layout/app.html.eex
 
+    echo "Adding common dependencies..."
+    sed -i \
+      -e 's;:logger, :runtime_tools;:logger, :runtime_tools, :bamboo, :bamboo_smtp;g' \
+      -e 's;{:plug_cowboy, "~> 2.0"};{:plug_cowboy, "~> 2.0"},\
+      {:timex, "~> 3.5"},\
+      {:sched_ex, "~> 1.0"},\
+      {:bamboo, "~> 1.6"},\
+      {:bamboo_smtp, "~> 3.1.0"},\
+      {:scrivener, "~> 2.0"},\
+      {:phx_gen_auth, "~> 0.6", only: [:dev], runtime: false},\
+      {:number, "~> 1.0.3"},\
+;g' \
+        ./mix.exs
+
+    echo "Adding tailwind instead of standard CSS..."
+
+    (cd assets && npm install --prefix assets --save-dev tailwindcss postcss postcss-loader autoprefixer)
+
+    rm ./assets/css/phoenix.css \
+      && mv ./assets/css/phoenix.{s,}css \
+      && sed -i -e 's~import "../css/app.scss"~import "../css/app.css"~g' ./assets/js/app.js \
+      && sed -i \
+      -e 's~@import "./phoenix.css";~@tailwind base;\
+@tailwind components;\
+@tailwind utilities;~g' \
+        ./assets/css/app.css
+
+    cat <<EOF >./assets/postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  }
+}
+EOF
+
+    cat <<EOF >./assets/tailwind.config.js
+module.exports = {
+  purge: [
+    "../**/*.html.eex",
+    "../**/*.html.leex",
+    "../**/views/**/*.ex",
+    "../**/live/**/*.ex",
+    "./js/**/*.js",
+  ],
+  darkMode: false, // or 'media' or 'class'
+  theme: {
+    extend: {},
+  },
+  variants: {
+    extend: {},
+  },
+  plugins: [],
+};
+EOF
+
+    sed -i '/^    module: {$/,/^    },$/c \
+    module: {\
+      rules: [\
+        {\
+          test: /\.js$/,\
+          exclude: /node_modules/,\
+          use: {\
+            loader: "babel-loader",\
+          },\
+        },\
+        {\
+          test: /\.[s]?css$/,\
+          use: [MiniCssExtractPlugin.loader, "css-loader", "postcss-loader"],\
+        },\
+      ],\
+    },' ./assets/webpack.config.js
+
   fi
 
   echo "Fetching elixir dependencies..."
@@ -72,6 +147,12 @@ if [ ! -f mix.exs ]; then
     echo "Creating new secret..."
     mix phx.gen.secret 128 | tail -n 1 >new_secret.erase_me.txt
     export SECRET_KEY_BASE="$(cat new_secret.erase_me.txt | echo -n)"
+  fi
+
+  if [ "$LV_SIGNING_SALT" == "" ]; then
+    echo "Creating new lv secret..."
+    mix phx.gen.secret 32 | tail -n 1 >new_lv_secret.erase_me.txt
+    export LV_SIGNING_SALT="$(cat new_lv_secret.erase_me.txt | echo -n)"
   fi
 
   echo "Done"
