@@ -7,6 +7,9 @@ export PGPASSWORD="${DB_PASS:=$PGPASSWORD}"
 export PGDATABASE="${DB_NAME:=$PGDATABASE}"
 export DATABASE_URL="${DATABASE_URL:=ecto://$PGUSER:$PGPASSWORD@$PGHOST/$PGDATABASE}"
 export MIX_ENV="${MIX_ENV:=dev}"
+if [[ $MIX_ENV == "prod" ]]; then
+  export NODE_ENV=production
+fi
 
 sudo /usr/local/bin/sanitize
 
