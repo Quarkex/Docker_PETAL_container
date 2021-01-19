@@ -70,12 +70,11 @@ if [ ! -f mix.exs ]; then
 
     echo "Adding common dependencies..."
     sed -i \
-      -e 's;:logger, :runtime_tools;:logger, :runtime_tools, :bamboo, :bamboo_smtp;g' \
+      -e 's;:logger, :runtime_tools;:logger, :runtime_tools, :bamboo;g' \
       -e 's;{:plug_cowboy, "~> 2.0"};{:plug_cowboy, "~> 2.0"},\
       {:timex, "~> 3.5"},\
       {:sched_ex, "~> 1.0"},\
       {:bamboo, "~> 1.6"},\
-      {:bamboo_smtp, "~> 3.1.0"},\
       {:scrivener, "~> 2.0"},\
       {:phx_gen_auth, "~> 0.6", only: [:dev], runtime: false},\
       {:number, "~> 1.0.3"},\
