@@ -1,11 +1,11 @@
   #################
- # phoenix 1.5.6 #
+ # phoenix 1.5.7 #
 #################
 
-FROM elixir:1.10.4
+FROM elixir:1.11.3
 MAINTAINER Manlio García <quarkex@gmail.com>
 
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - \
  && apt-get update  \
  && apt-get install \
  sudo               \

@@ -83,8 +83,6 @@ if [ ! -f mix.exs ]; then
 
     echo "Adding tailwind instead of standard CSS..."
 
-    (cd assets && npm install --prefix assets --save-dev tailwindcss postcss postcss-loader autoprefixer)
-
     rm ./assets/css/phoenix.css \
       && mv ./assets/css/app.{s,}css \
       && sed -i -e 's~import "../css/app.scss"~import "../css/app.css"~g' ./assets/js/app.js \
@@ -139,6 +137,19 @@ EOF
         },\
       ],\
     },' ./assets/webpack.config.js
+
+    #sed -i 's/"webpack": "4.41.5"/"webpack": "5.16.0"/g' ./assets/package.json
+    sed -i 's/"webpack-cli": "^3.3.2"/"webpack-cli": "^3.3.2",\
+"tailwindcss": "*",\
+"postcss": "*",\
+"postcss-loader": "*",\
+"autoprefixer": "*"/g' ./assets/package.json
+
+    echo "Fetching node dependencies..."
+    (cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development)
+
+    #echo "Fetching tailwind dependencies..."
+    #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
 
   fi
 
