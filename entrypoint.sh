@@ -64,8 +64,8 @@ if [ ! -f mix.exs ]; then
     sed -i \
       -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") || "en" %>";g' \
       -e 's;live_title_tag assigns\[:page_title\] || "[^"]*",;live_title_tag assigns[:page_title] || System.get_env("TITLE"),;g' \
-      -e 's;  </head>;<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>\r  </head>;g' \
-      -e 's;  </body>;pt src="https://cdn.jsdelivr.net/npm/@ryangjchandler/spruce@2.x.x/dist/spruce.umd.js"></script>\r  </body>;g' \
+      -e 's;  </head>;    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>\n  </head>;g' \
+      -e 's;  </body>;    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/spruce@2.x.x/dist/spruce.umd.js"></script>\n  </body>;g' \
         ./lib/*_web/templates/layout/root.html.leex
 
     echo "Adding common dependencies..."
