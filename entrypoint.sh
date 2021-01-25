@@ -87,17 +87,18 @@ if [ ! -f mix.exs ]; then
       && mv ./assets/css/app.{s,}css \
       && sed -i -e 's~import "../css/app.scss"~import "../css/app.css"~g' ./assets/js/app.js \
       && sed -i \
-      -e 's~@import "./phoenix.css";~@tailwind base;\
-@tailwind components;\
-@tailwind utilities;~g' \
+      -e 's~@import "./phoenix.css";~@import "tailwindcss/base";\
+@import "tailwindcss/components";\
+@import "tailwindcss/utilities";~g' \
         ./assets/css/app.css
 
     cat <<EOF >./assets/postcss.config.js
 module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  }
+  plugins: [
+    require("postcss-import"),
+    require('tailwindcss')('./tailwind.config.js'),
+    require('autoprefixer')
+  ]
 }
 EOF
 
@@ -143,13 +144,14 @@ EOF
 "tailwindcss": "*",\
 "postcss": "*",\
 "postcss-loader": "*",\
+"postcss-import": "*",\
 "autoprefixer": "*"/g' ./assets/package.json
 
     echo "Fetching node dependencies..."
     (cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development)
 
     #echo "Fetching tailwind dependencies..."
-    #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
+    #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
 
   fi
 
