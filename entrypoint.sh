@@ -141,11 +141,11 @@ EOF
 
     #sed -i 's/"webpack": "4.41.5"/"webpack": "5.16.0"/g' ./assets/package.json
     sed -i 's/"webpack-cli": "^3.3.2"/"webpack-cli": "^3.3.2",\
-"tailwindcss": "*",\
-"postcss": "*",\
-"postcss-loader": "*",\
-"postcss-import": "*",\
-"autoprefixer": "*"/g' ./assets/package.json
+"tailwindcss": "2.0.2",\
+"postcss": "8.2.4",\
+"postcss-loader": "4.1.0",\
+"postcss-import": "14.0.0",\
+"autoprefixer": "10.2.3"/g' ./assets/package.json
 
     echo "Fetching node dependencies..."
     (cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development)
