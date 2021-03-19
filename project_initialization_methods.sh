@@ -1,3 +1,13 @@
+search_and_replace(){
+  target_string="$1"
+  regexp_to_apply="$2"
+  target_file="$3"
+  target_lines="`grep -n "$target_string" "$target_file" | cut -d: -f1`"
+  for target_line in $target_lines; do
+    sed -i "${target_line}${regexp_to_apply}" "$target_file"
+  done
+}
+
 generate_phoenix_project(){
     echo "Creating new phoenix project named “${APP_NAME}”..."
 
@@ -17,6 +27,7 @@ generate_phoenix_project(){
 
     echo "Adding tailwind instead of standard CSS..."
     inject_tailwind
+    apply_tailwind_classes
 
     #echo "Fetching tailwind dependencies..."
     #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
@@ -29,6 +40,122 @@ hook_project_default_files_to_environment_variables(){
       -e 's;  </head>;    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>\n  </head>;g' \
       -e 's;  </body>;    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/spruce@2.x.x/dist/spruce.umd.js"></script>\n  </body>;g' \
         ./lib/*_web/templates/layout/root.html.leex
+}
+
+apply_tailwind_classes(){
+  # We will use flexbox to arrange the elements,
+  # but phoenix adds an iframe for its liveview functionality.
+  # Let's make sure that it remains hidden.
+  search_and_replace \
+    'LiveView specific classes for your customizations' \
+    's~$~\nbody > iframe[src="/phoenix/live_reload/frame"] {\n  height:0;\n  width:0;\n}~' \
+    ./assets/css/app.css
+
+  search_and_replace \
+    'LiveView specific classes for your customizations' \
+    's~$~\n.body-wrapper, .body-wrapper > *[data-phx-root-id] {\n  display: flex;\n  flex:1;\n}~' \
+    ./assets/css/app.css
+
+  # The html has to fill the viewport for flex to be computed properly
+  search_and_replace \
+    '<html ' \
+    's/html /html class="flex w-screen h-screen"/' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  # Now the body can just fill the html area.
+  # Let's keep the column arrangements, as the devs expect this
+  # to be the default flow of things.
+  search_and_replace \
+    '<body' \
+    's/body/body class="flex flex-col flex-1"/' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  # Let's wrap the main content to apply the previous css modifications.
+  search_and_replace \
+    '    <%= @inner_content %>' \
+    's;<;<div class="body-wrapper"><;' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  search_and_replace \
+    '@inner_content %>' \
+    's;$;</div>;' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  # We will inject a file to import other components, and build from there.
+  search_and_replace \
+    '@import "tailwindcss/components";' \
+    's~$~\n@import "./components.css";~' \
+    ./assets/css/app.css
+
+  # Then we build our custom compoments index file, and each component inside a
+  # dedicated folder.
+  cat <<EOF >./assets/css/components.css
+@import "./assets/css/components/fonts.css";
+EOF
+
+  mkdir "./assets/css/components"
+
+  cat <<EOF >./assets/css/components/fonts.css
+h1 {
+  @apply text-6xl;
+}
+h2 {
+  @apply text-5xl;
+}
+h3 {
+  @apply text-4xl;
+}
+h4 {
+  @apply text-3xl;
+}
+h5 {
+  @apply text-2xl;
+}
+h6 {
+  @apply text-xl;
+}
+
+p {
+  @apply text-base;
+}
+EOF
+
+  # Now these are just aestetics elements to avoid a broken first impression,
+  # and to provide some exapmles to use tailwind.
+  search_and_replace \
+    '        <nav role="navigation">' \
+    's/nav /nav class="text-right px-6"/g' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  search_and_replace \
+    '      <section class="container">' \
+    's/container/container mx-auto flex flex-row-reverse p-6 justify-around items-center/g' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+
+  # These two files are aidentical in function and structure when first
+  # scaffolding a phoenix app with liveview enabled.
+  for file in app.html.eex live.html.leex; do
+    search_and_replace \
+      '<main role="main" class="container">' \
+      's/container/container mx-auto flex flex-col/g' \
+      ./lib/*_web/templates/layout/$file
+  done
+
+  search_and_replace \
+    '<section class="phx-hero">' \
+    's/phx-hero/flex flex-col flex-1 py-12 justify-around items-center/g' \
+    ./lib/*_web/live/page_live.html.leex
+
+  search_and_replace \
+    '<section class="row">' \
+    's/row/container mx-auto flex/g' \
+    ./lib/*_web/live/page_live.html.leex
+
+  search_and_replace \
+    '<article class="column">' \
+    's/column/container mx-auto flex flex-col flex-1 text-center/g' \
+    ./lib/*_web/live/page_live.html.leex
 }
 
 hook_config_files_to_environment_variables(){
