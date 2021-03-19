@@ -9,6 +9,8 @@ export DATABASE_URL="${DATABASE_URL:=ecto://${DB_USER:=$PGUSER}:${DB_PASS:=$PGPA
 export MIX_ENV="${MIX_ENV:=dev}"
 if [[ $MIX_ENV == "prod" ]]; then
   export NODE_ENV=production
+else
+  export NODE_ENV=development
 fi
 
 sudo /usr/local/bin/sanitize
@@ -28,8 +30,8 @@ if [ ! -f mix.exs ]; then
 
   echo "Fetching elixir dependencies..."
   mix deps.get &>/dev/null
-  echo "Fetching node dependencies..."
-  (cd assets && npm install &>/dev/null)
+  echo "Fetching node $NODE_ENV dependencies..."
+  (cd assets && npm install &>/dev/null && node node_modules/webpack/bin/webpack.js --mode $NODE_ENV &>/dev/null)
 
   generate_secrets_if_undefined
 

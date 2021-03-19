@@ -18,9 +18,6 @@ generate_phoenix_project(){
     echo "Adding tailwind instead of standard CSS..."
     inject_tailwind
 
-    echo "Fetching node development dependencies..."
-    (cd assets && npm install &>/dev/null && node node_modules/webpack/bin/webpack.js --mode development &>/dev/null)
-
     #echo "Fetching tailwind dependencies..."
     #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
 }
