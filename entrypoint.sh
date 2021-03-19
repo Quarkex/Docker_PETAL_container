@@ -13,13 +13,7 @@ fi
 
 sudo /usr/local/bin/sanitize
 
-cd $APP_HOME
-if [ ! -f mix.exs ]; then
-
-  if [ ! "$GIT_SOURCE" == "" ]; then
-    echo "Fetching phoenix project..."
-    git clone --recurse-submodules "$GIT_SOURCE" .
-  else
+generate_phoenix_project(){
     echo "Creating new phoenix project named “${APP_NAME}”..."
 
     if [ "$DB_NAME" == "" ]; then
@@ -29,6 +23,33 @@ if [ ! -f mix.exs ]; then
     fi
 
     echo "Linking config values to env variables..."
+    hook_config_files_to_environment_variables
+
+    hook_project_default_files_to_environment_variables
+
+    echo "Adding common dependencies..."
+    inject_extra_dependencies
+
+    echo "Adding tailwind instead of standard CSS..."
+    inject_tailwind
+
+    echo "Fetching node dependencies..."
+    (cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development)
+
+    #echo "Fetching tailwind dependencies..."
+    #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
+}
+
+hook_project_default_files_to_environment_variables(){
+    sed -i \
+      -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") || "en" %>";g' \
+      -e 's;live_title_tag assigns\[:page_title\] || "[^"]*",;live_title_tag assigns[:page_title] || System.get_env("TITLE"),;g' \
+      -e 's;  </head>;    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>\n  </head>;g' \
+      -e 's;  </body>;    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/spruce@2.x.x/dist/spruce.umd.js"></script>\n  </body>;g' \
+        ./lib/*_web/templates/layout/root.html.leex
+}
+
+hook_config_files_to_environment_variables(){
     sed -i \
       -e 's/host: "[^"]*"/host: System.get_env("DOMAIN") || "localhost"/g' \
       -e 's/secret_key_base: "[^"]*"/secret_key_base: System.get_env("SECRET_KEY_BASE") || ""/g' \
@@ -60,15 +81,9 @@ if [ ! -f mix.exs ]; then
         -e 's/hostname: "[^"]*",/hostname: System.get_env("DB_HOST") || "db",\n  port: String.to_integer(System.get_env("DB_PORT") || "5432"),/g' \
           ./config/test.exs
     fi
+}
 
-    sed -i \
-      -e 's;lang="[^"]*";lang="<%= System.get_env("LANGUAGE") || "en" %>";g' \
-      -e 's;live_title_tag assigns\[:page_title\] || "[^"]*",;live_title_tag assigns[:page_title] || System.get_env("TITLE"),;g' \
-      -e 's;  </head>;    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.8.0/dist/alpine.min.js" defer></script>\n  </head>;g' \
-      -e 's;  </body>;    <script src="https://cdn.jsdelivr.net/npm/@ryangjchandler/spruce@2.x.x/dist/spruce.umd.js"></script>\n  </body>;g' \
-        ./lib/*_web/templates/layout/root.html.leex
-
-    echo "Adding common dependencies..."
+inject_extra_dependencies(){
     sed -i \
       -e 's;:logger, :runtime_tools;:logger, :runtime_tools, :bamboo, :recaptcha;g' \
       -e 's;{:plug_cowboy, "~> 2.0"};{:plug_cowboy, "~> 2.0"},\
@@ -80,9 +95,9 @@ if [ ! -f mix.exs ]; then
       {:number, "~> 1.0.3"},\
       {:recaptcha, "~> 3.0"},;g' \
         ./mix.exs
+}
 
-    echo "Adding tailwind instead of standard CSS..."
-
+inject_tailwind(){
     rm ./assets/css/phoenix.css \
       && mv ./assets/css/app.{s,}css \
       && sed -i -e 's~import "../css/app.scss"~import "../css/app.css"~g' ./assets/js/app.js \
@@ -146,20 +161,9 @@ EOF
 "postcss-loader": "4.1.0",\
 "postcss-import": "14.0.0",\
 "autoprefixer": "10.2.3"/g' ./assets/package.json
+}
 
-    echo "Fetching node dependencies..."
-    (cd assets && npm install && node node_modules/webpack/bin/webpack.js --mode development)
-
-    #echo "Fetching tailwind dependencies..."
-    #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
-
-  fi
-
-  echo "Fetching elixir dependencies..."
-  mix deps.get &>/dev/null
-  echo "Fetching node dependencies..."
-  (cd assets && npm install &>/dev/null)
-
+generate_secrets_if_undefined(){
   if [ "$SECRET_KEY_BASE" == "" ]; then
     echo "Creating new secret..."
     mix phx.gen.secret 128 | tail -n 1 >new_secret.erase_me.txt
@@ -171,6 +175,24 @@ EOF
     mix phx.gen.secret 32 | tail -n 1 >new_lv_secret.erase_me.txt
     export LV_SIGNING_SALT="$(cat new_lv_secret.erase_me.txt | echo -n)"
   fi
+}
+
+cd $APP_HOME
+if [ ! -f mix.exs ]; then
+
+  if [ ! "$GIT_SOURCE" == "" ]; then
+    echo "Fetching phoenix project..."
+    git clone --recurse-submodules "$GIT_SOURCE" .
+  else
+    generate_phoenix_project
+  fi
+
+  echo "Fetching elixir dependencies..."
+  mix deps.get &>/dev/null
+  echo "Fetching node dependencies..."
+  (cd assets && npm install &>/dev/null)
+
+  generate_secrets_if_undefined
 
   echo "Done"
 fi
