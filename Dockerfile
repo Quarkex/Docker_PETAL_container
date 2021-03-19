@@ -51,6 +51,7 @@ RUN groupadd -g 40759 elixir && useradd -u 40759 -g 40759 -m elixir
 COPY sudoers /etc/sudoers.d/sudoers
 COPY environment /etc/environment
 COPY bin/* /usr/local/bin/
+COPY project_initialization_methods.sh /.
 COPY entrypoint.sh /.
 
 RUN chmod +x /usr/local/bin/* && chmod 0440 /etc/sudoers.d/sudoers
