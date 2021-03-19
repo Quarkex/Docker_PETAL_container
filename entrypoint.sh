@@ -48,4 +48,4 @@ if [ ! "$DB_NAME" == "" ]; then
     mix ecto.migrate
 fi
 mix compile
-exec elixir --name "${ERLANG_NAME:-app}@${DOMAIN:-${HOSTNAME:-localhost}}" --cookie "${ERLANG_COOKIE:-app}" -S mix phx.server
+exec elixir --name "${ERLANG_NAME:-app}@${ERLANG_DOMAIN:-${DOMAIN:-${HOSTNAME:-localhost}}}" --cookie "${ERLANG_COOKIE:-app}" -S mix phx.server
