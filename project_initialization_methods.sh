@@ -29,8 +29,26 @@ generate_phoenix_project(){
     inject_tailwind
     apply_tailwind_classes
 
+    echo "Renaming image folder..."
+    rename_image_folder
+
     #echo "Fetching tailwind dependencies..."
     #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
+}
+
+rename_image_folder(){
+  # Such a strange decision to use “images” as default, when “img” is shorter.
+  search_and_replace \
+    'images' \
+    's/images/img/' \
+    ./lib/*_web/endpoint.ex
+
+  search_and_replace \
+    '/images/phoenix.png' \
+    's;/images/phoenix.png;/img/phoenix.png;g' \
+    ./lib/*_web/templates/layout/root.html.leex
+
+  mv ./assets/static/{images,img}
 }
 
 hook_project_default_files_to_environment_variables(){
