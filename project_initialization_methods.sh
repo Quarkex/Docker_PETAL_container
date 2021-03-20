@@ -108,7 +108,7 @@ apply_tailwind_classes(){
   # Then we build our custom compoments index file, and each component inside a
   # dedicated folder.
   cat <<EOF >./assets/css/components.css
-@import "./assets/css/components/fonts.css";
+@import "./components/fonts.css";
 EOF
 
   mkdir "./assets/css/components"
