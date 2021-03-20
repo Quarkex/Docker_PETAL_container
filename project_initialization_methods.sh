@@ -505,14 +505,34 @@ hook_config_files_to_environment_variables(){
       -e 's/signing_salt: "[^"]*"/signing_salt: System.get_env("LV_SIGNING_SALT") || ""/g' \
         ./config/config.exs
 
-    sed -i \
-      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT") || "4000")/g' \
-        ./config/dev.exs
+    search_and_inject \
+      '  http: \[port: 4000\],' \
+      '\  https: [\
+    port: String.to_integer(System.get_env("SSL_PORT") || "443"),\
+    cipher_suite: :strong,\
+    certfile: System.get_env("SSL_CERT_PATH") || "priv/cert/selfsigned.pem",\
+    keyfile: System.get_env("SSL_KEY_PATH") || "priv/cert/selfsigned_key.pem"\
+  ],' ./config/dev.exs
 
-    sed -i \
-      -e 's/host: "[^"]*"/host: System.get_env("DOMAIN") || "localhost"/g' \
-      -e 's/port: [0-9]*/port: String.to_integer(System.get_env("PORT") || "4000")/g' \
-        ./config/prod.exs
+    search_and_replace \
+      '  http: \[port: 4000\],' \
+      's/port: 4000/port: String.to_integer(System.get_env("PORT") || "4000")/g' \
+      ./config/dev.exs
+
+    search_and_inject \
+      '  url: \[host: "example.com", port: 80\],' \
+      '\  force_ssl: [hsts: true],\
+  https: [\
+    port: String.to_integer(System.get_env("SSL_PORT") || "443"),\
+    cipher_suite: :strong,\
+    certfile: System.get_env("SSL_CERT_PATH") || "priv/cert/selfsigned.pem",\
+    keyfile: System.get_env("SSL_KEY_PATH") || "priv/cert/selfsigned_key.pem"\
+  ],' ./config/prod.exs
+
+    search_and_replace \
+      '  url: \[host: "example.com", port: 80\],' \
+      's/host: "example.com", port: 80/\n    host: System.get_env("DOMAIN") || "localhost",\n    port: String.to_integer(System.get_env("SSL_PORT") || System.get_env("PORT") || "4000")\n  /g' \
+      ./config/prod.exs
 
     if [ ! "$DB_NAME" == "" ]; then
       sed -i \

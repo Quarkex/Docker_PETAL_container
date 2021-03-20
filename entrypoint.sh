@@ -33,6 +33,13 @@ if [ ! -f mix.exs ]; then
   echo "Fetching node $NODE_ENV dependencies..."
   (cd assets && npm install &>/dev/null && node node_modules/webpack/bin/webpack.js --mode $NODE_ENV &>/dev/null)
 
+  if [[ ! -e ./priv/cert ]] || [ "$MIX_ENV" == "dev" ]; then
+    echo "Generating self-signed certs..."
+    mix phx.gen.cert &>/dev/null
+    echo "# Ignore generated SSL certificates" >>.gitignore
+    echo "/priv/cert/" >>.gitignore
+  fi
+
   generate_secrets_if_undefined
 
   echo "Done"
