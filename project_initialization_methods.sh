@@ -393,7 +393,7 @@ apply_tailwind_classes(){
 
   search_and_replace \
     'LiveView specific classes for your customizations' \
-    's~$~\n.body-wrapper, .body-wrapper > *[data-phx-root-id] {\n  display: flex;\n  flex:1;\n}~' \
+    's~$~\n.body-wrapper, .body-wrapper > *[data-phx-view] {\n  display: flex;\n  flex:1;\n}~' \
     ./assets/css/app.css
 
   # The html has to fill the viewport for flex to be computed properly
