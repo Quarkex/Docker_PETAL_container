@@ -41,11 +41,11 @@ fi
 if [ "$MIX_ENV" == "prod" ]; then
   mix deps.get --only "$MIX_ENV"
   npm run deploy --prefix ./assets
-  mix phx.digest
 fi
 if [ ! "$DB_NAME" == "" ]; then
     mix ecto.setup
     mix ecto.migrate
 fi
 mix compile
+mix phx.digest
 exec elixir --name "${ERLANG_NAME:-app}@${ERLANG_DOMAIN:-${DOMAIN:-${HOSTNAME:-localhost}}}" --cookie "${ERLANG_COOKIE:-app}" -S mix phx.server
