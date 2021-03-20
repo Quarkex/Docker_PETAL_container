@@ -469,7 +469,7 @@ EOF
 
   search_and_replace \
     '      <section class="container">' \
-    's/container/container mx-auto flex flex-row-reverse p-6 justify-around items-center/g' \
+    's/container/container mx-auto flex flex-row-reverse p-6 justify-around text-center/g' \
     ./lib/*_web/templates/layout/root.html.leex
 
 
