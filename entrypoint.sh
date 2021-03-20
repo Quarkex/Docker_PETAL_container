@@ -54,5 +54,8 @@ if [ ! "$DB_NAME" == "" ]; then
     mix ecto.migrate
 fi
 mix compile
+if [[ ! -e ./priv/static ]]; then
+  (cd assets && npm install &>/dev/null && node node_modules/webpack/bin/webpack.js --mode $NODE_ENV &>/dev/null)
+fi
 mix phx.digest
 exec elixir --name "${ERLANG_NAME:-app}@${ERLANG_DOMAIN:-${DOMAIN:-${HOSTNAME:-localhost}}}" --cookie "${ERLANG_COOKIE:-app}" -S mix phx.server
