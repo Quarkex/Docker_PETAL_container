@@ -168,40 +168,53 @@ scaffold_pwa_files(){
   # Add asset links files.
   cat <<EOF >./lib/`project_application_name`_web/controllers/asset_links_controller.ex
 defmodule `project_module_name`Web.AssetLinksController do
+
+  @application :`project_application_name`
   alias `project_module_name`Web, as: Web
 
   use Web, :controller
 
   def index(conn, _params) do
+    {code, payload} = asset_links()
+                      |> Jason.encode()
+                      |> case do
+                        {:ok, json} -> {200, json}
+                        _ -> {500, ~w[{"status": "error"}]}
+                      end
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Phoenix.View.render(Web.AssetLinksView, "assetlinks.json", []))
+    |> send_resp(code, payload)
   end
+
+  defp asset_links() do
+    ~w{
+      relation
+      target
+      sha256_cert_fingerprints
+    }a
+    |> Enum.map(fn a -> {a, asset_links(a)} end)
+    |> Map.new
+  end
+
+  defp asset_links(:target),
+  do: %{
+    namespace: asset_links(:apk_namespace, "android_app"),
+    target: asset_links(:apk_package_name, "tld.domain.apk")
+  }
+
+  defp asset_links(:relation),
+  do: :apk_relation
+      |> asset_links("delegate_permission/common.handle_all_urls")
+      |> String.split(",")
+
+  defp asset_links(:sha256_cert_fingerprints),
+  do: :apk_sha256_cert_fingerprints
+      |> asset_links("00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00")
+      |> String.split(",")
+
+  defp asset_links(attribute, default_value),
+  do: Application.get_env(@application, Web.Endpoint)[attribute] || default_value
 end
-EOF
-
-  cat <<EOF >./lib/`project_application_name`_web/views/asset_links_view.ex
-defmodule `project_module_name`Web.AssetLinksView do
-  alias `project_module_name`Web, as: Web
-  use Web, :view
-
-  def apk_package_name do
-    Application.get_env(:`project_application_name`, `project_module_name`Web.Endpoint, "tld.domain.apk")[:apk_package_name]
-  end
-
-  def apk_sha256_cert_fingerprints do
-    Application.get_env(:`project_application_name`, `project_module_name`Web.Endpoint, "00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00:00")[:apk_sha256_cert_fingerprints]
-  end
-end
-EOF
-
-  mkdir ./lib/`project_application_name`_web/templates/asset_links
-  cat <<EOF >./lib/`project_application_name`_web/templates/asset_links/assetlinks.json.eex
-[{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target" : { "namespace": "android_app", "package_name": "<%= apk_package_name() %>",
-    "sha256_cert_fingerprints": ["<%= apk_sha256_cert_fingerprints() %>"] }
-}]
 EOF
 
   # Add manifest files.
