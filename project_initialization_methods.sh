@@ -279,6 +279,12 @@ EOF
       "src": "img/logo-512.png",
       "sizes": "512x512",
       "type": "image/png"
+      }, {
+      "src": "img/logo.svg",
+      "sizes": "48x48 72x72 96x96 128x128 256x256",
+      "purpose": "maskable any",
+      "type": "image/svg"
+      }, {
   }],
   "lang": "<%= lang() %>",
   "start_url": "https://<%= domain()  %>/",
