@@ -96,7 +96,7 @@ hook_project_internationalization_to_environment_variables() {
 config :'`project_application_name`', '`project_module_name`'Web.Gettext,\
   locales: [System.get_env("LANGUAGE", "en")],\
   default_locale: System.get_env("LANGUAGE", "en")\
-' ./config/dev.exs
+' ./config/config.exs
 }
 
 scaffold_non_live_phoenix_too(){
