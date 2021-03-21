@@ -384,6 +384,18 @@ hook_project_default_files_to_environment_variables(){
 }
 
 apply_tailwind_classes(){
+  # Add a SEO mobile friendly tweak that can be overrriden.
+  search_and_inject \
+    'LiveView specific classes for your customizations'  '\
+\
+/* SEO tweak to make links touch-friendly */\
+a {\
+  display: inline-block;\
+  min-width: 48px;\
+  min-height: 48px;\
+}\
+' ./assets/css/app.css
+
   # We will use flexbox to arrange the elements,
   # but phoenix adds an iframe for its liveview functionality.
   # Let's make sure that it remains hidden.
