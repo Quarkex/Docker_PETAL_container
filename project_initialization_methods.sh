@@ -534,7 +534,7 @@ hook_config_files_to_environment_variables(){
 
     search_and_inject \
       '  url: \[host: "example.com", port: 80\],' \
-      '\  force_ssl: [hsts: true],\
+      '\  force_ssl: [hsts: if(System.get_env("SSL_ONLY", "false") == "true", do: true, else: false)],\
   https: [\
     port: String.to_integer(System.get_env("SSL_PORT") || "443"),\
     cipher_suite: :strong,\
