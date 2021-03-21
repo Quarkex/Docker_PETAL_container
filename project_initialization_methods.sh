@@ -497,7 +497,7 @@ EOF
 
   search_and_replace \
     '<section class="phx-hero">' \
-    's/phx-hero/flex flex-col flex-1 py-12 justify-around items-center/g' \
+    's/phx-hero/flex flex-col flex-1 py-12 justify-around text-center/g' \
     ./lib/*_web/live/page_live.html.leex
 
   search_and_replace \
@@ -507,7 +507,7 @@ EOF
 
   search_and_replace \
     '<article class="column">' \
-    's/column/container mx-auto flex flex-col flex-1 text-center/g' \
+    's/column/container mx-auto flex flex-col flex-1 items-center/g' \
     ./lib/*_web/live/page_live.html.leex
 }
 
