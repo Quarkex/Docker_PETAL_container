@@ -285,39 +285,6 @@ EOF
   "display": "<%= display() %>",
   "background_color": "<%= background_color() %>",
   "theme_color": "<%= theme_color() %>"
-}{
-  "name": "<%= title() %>",
-  "short_name": "<%= title() %>",
-  "icons": [{
-      "src": "img/logo-128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-  }],
-  "lang": "<%= lang() %>",
-  "start_url": "https://<%= domain()  %>/",
-  "display": "<%= display() %>",
-  "background_color": "<%= background_color() %>",
-  "theme_color": "<%= theme_color() %>"
 }
 EOF
 
