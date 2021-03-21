@@ -207,91 +207,95 @@ EOF
   # Add manifest files.
   cat <<EOF >./lib/`project_application_name`_web/controllers/manifest_controller.ex
 defmodule `project_module_name`Web.ManifestController do
+
+  @application :`project_application_name`
   alias `project_module_name`Web, as: Web
 
   use Web, :controller
 
   def index(conn, _params) do
+    {code, payload} = manifest()
+                      |> Jason.encode()
+                      |> case do
+                        {:ok, json} -> {200, json}
+                        _ -> {500, ~w[{"status": "error"}]}
+                      end
     conn
     |> put_resp_content_type("application/json")
-    |> send_resp(200, Phoenix.View.render(Web.ManifestView, "manifest.json", []))
+    |> send_resp(code, payload)
   end
+
+  defp manifest() do
+    ~w{
+      name
+      short_name
+      icons
+      lang
+      start_url
+      display
+      background_color
+      theme_color
+    }a
+    |> Enum.map(fn a -> {a, manifest(a)} end)
+    |> Map.new
+  end
+
+  defp manifest(:name),
+  do: manifest(:name, :title, manifest(:domain))
+
+  defp manifest(:short_name),
+  do: manifest(:name)
+
+  defp manifest(:start_url),
+  do: "https://" <> manifest(:domain)
+
+  defp manifest(:display),
+  do: manifest(:display, "standalone")
+
+  defp manifest(:background_color),
+  do: manifest(:background_color, "white")
+
+  defp manifest(:theme_color),
+  do: manifest(:theme_color, "white")
+
+  defp manifest(:icons) do
+    icons = Application.get_env(@application, Web.Endpoint)[:icons] || ~w{ 512 256 384 192 152 144 128 96 72 48 }
+    cond do
+      is_list(icons) && Enum.any?(icons, &is_map/1) ->
+        icons
+      true ->
+        Enum.map(icons, fn s ->
+          %{
+            src: "img/logo-#{s}.png",
+            sizes: "#{s}x#{s}",
+            type: "image/png"
+          }
+        end) ++ [
+          %{
+            src: "img/logo.svg",
+            sizes: icons
+                   |> Enum.map(fn s -> "#{s}x#{s}" end)
+                   |> Enum.join(" "),
+            purpose: "maskable any",
+            type: "image/svg"
+          }
+        ]
+    end
+  end
+
+  defp manifest(:lang),
+  do: Application.get_env(@application, Web.Gettext)[:default_locale] || "en"
+
+  defp manifest(:domain),
+  do: Application.get_env(@application, Web.Endpoint)[:url][:host] || "localhost"
+
+  defp manifest(attribute, default),
+  do: Application.get_env(@application, Web.Endpoint)[attribute] || default
+
+  defp manifest(_name, attribute, default),
+  do: Application.get_env(@application, Web.Endpoint)[attribute] || default
+
 end
-EOF
-
-  cat <<EOF >./lib/`project_application_name`_web/views/manifest_view.ex
-defmodule `project_module_name`Web.ManifestView do
-  alias `project_module_name`Web, as: Web
-  use Web, :view
-
-  def title do
-    Application.get_env(:`project_application_name`, `project_module_name`Web.Endpoint, "localhost")[:title]
-  end
-
-  def domain do
-    Application.get_env(:`project_application_name`, `project_module_name`Web.Endpoint, "localhost")[:url][:host]
-  end
-
-  def lang do
-    Application.get_env(:`project_application_name`, `project_module_name`Web.Gettext, "en")[:default_locale]
-  end
-
-  def display do
-    "standalone"
-  end
-
-  def background_color do
-    "white"
-  end
-
-  def theme_color do
-    "white"
-  end
-end
-EOF
-
-  mkdir ./lib/`project_application_name`_web/templates/manifest
-  cat <<EOF >./lib/`project_application_name`_web/templates/manifest/manifest.json.eex
-{
-  "name": "<%= title() %>",
-  "short_name": "<%= title() %>",
-  "icons": [{
-      "src": "img/logo-128.png",
-      "sizes": "128x128",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-152.png",
-      "sizes": "152x152",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-256.png",
-      "sizes": "256x256",
-      "type": "image/png"
-      }, {
-      "src": "img/logo-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-      }, {
-      "src": "img/logo.svg",
-      "sizes": "48x48 72x72 96x96 128x128 256x256",
-      "purpose": "maskable any",
-      "type": "image/svg"
-      }, {
-  }],
-  "lang": "<%= lang() %>",
-  "start_url": "https://<%= domain()  %>/",
-  "display": "<%= display() %>",
-  "background_color": "<%= background_color() %>",
-  "theme_color": "<%= theme_color() %>"
-}
 EOF
 
   # Add a service worker file ready to install itself.
