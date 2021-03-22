@@ -49,6 +49,9 @@ generate_phoenix_project(){
     echo "Adding release tweaks..."
     inject_release_tweaks
 
+    echo "Adding bakeware tweaks..."
+    inject_bakeware_tweaks
+
     echo "Adding common dependencies..."
     inject_extra_dependencies
 
@@ -105,6 +108,34 @@ defmodule `project_module_name`.Release do
   end
 end
 EOF
+}
+
+inject_bakeware_tweaks(){
+  search_and_inject '      deps: deps()' '\
+      releases: [{:'`project_application_name`', release()}],\
+      preferred_cli_env: [release: Mix.env()],' \
+      ./mix.exs
+
+  search_and_inject '{:plug_cowboy, "~> 2.0"}' '\
+      {:bakeware, "~> 0.1.5"},' \
+      ./mix.exs
+
+  search_and_inject 'setup: \["deps.get", "cmd npm install --prefix assets"\]' '\
+      assets: ["cmd npm run deploy --prefix assets"],\
+      release: ["assets", "phx.digest", "release"],' \
+      ./mix.exs
+
+  search_and_inject '^end$' '\
+\
+  defp release do\
+    [\
+      overwrite: true,\
+      cookie: System.get_env("ERLANG_COOKIE", "app"),\
+      steps: [:assemble, &Bakeware.assemble/1],\
+      strip_beams: Mix.env() == :prod\
+    ]\
+  end' \
+  ./mix.exs
 }
 
 changing_image_files_and_folders(){
