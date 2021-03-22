@@ -46,6 +46,9 @@ generate_phoenix_project(){
 
     hook_project_internationalization_to_environment_variables
 
+    echo "Adding release tweaks..."
+    inject_release_tweaks
+
     echo "Adding common dependencies..."
     inject_extra_dependencies
 
@@ -61,6 +64,47 @@ generate_phoenix_project(){
 
     #echo "Fetching tailwind dependencies..."
     #(npm install --prefix assets --save-dev tailwindcss postcss postcss-loader postcss-import autoprefixer && cd assets && node node_modules/webpack/bin/webpack.js --mode development)
+}
+
+inject_release_tweaks(){
+  search_and_replace \
+    '^  url: \[' \
+    's/^/  server: true,\n&/' \
+    ./config/config.exs
+
+  mv ./config/{prod.secret,releases}.exs
+
+  sed -i 's/use Mix.Config/import Config/g' ./config/*.exs
+
+  echo "`head -n -4 ./config/prod.exs`" >./config/prod.exs
+  echo "`head -n -10 ./config/releases.exs | tail -n 14`" >>./config/prod.exs
+
+  cat <<EOF >./lib/`project_application_name`/release.ex
+defmodule `project_module_name`.Release do
+  @application :`project_application_name`
+
+  def migrate do
+    load_app()
+
+    for repo <- repos() do
+      {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :up, all: true))
+    end
+  end
+
+  def rollback(repo, version) do
+    load_app()
+    {:ok, _, _} = Ecto.Migrator.with_repo(repo, &Ecto.Migrator.run(&1, :down, to: version))
+  end
+
+  defp repos do
+    Application.fetch_env!(@application, :ecto_repos)
+  end
+
+  defp load_app do
+    Application.load(@application)
+  end
+end
+EOF
 }
 
 changing_image_files_and_folders(){
