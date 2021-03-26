@@ -46,6 +46,9 @@ generate_phoenix_project(){
 
     hook_project_internationalization_to_environment_variables
 
+    echo "Adding example key value storage agent..."
+    inject_key_value_storage_agent
+
     echo "Adding release tweaks..."
     inject_release_tweaks
 
@@ -688,6 +691,16 @@ inject_extra_dependencies(){
       {:number, "~> 1.0.3"},\
       {:recaptcha, "~> 3.0"},;g' \
         ./mix.exs
+}
+
+inject_key_value_storage_agent(){
+  sed -i \
+    -e 's/^      LocalhostWeb.Endpoint$/&,/' \
+    -e 's;# {Localhost.Worker, arg};&\n      {KeyValueStorage, []};g' \
+      ./lib/`project_application_name`/application.ex
+
+  echo "ZGVmbW9kdWxlIEtleVZhbHVlU3RvcmFnZSBkbwogIHVzZSBBZ2VudAoKICBAZG9jICIiIgogIFN0YXJ0cyBrZXkgdmFsdWUgc3RvcmFnZS4KICAiIiIKICBkZWYgc3RhcnRfbGluayhvcHRzIFxcIFtdKSBkbwogICAgQWdlbnQuc3RhcnRfbGluayhmbiAtPiAle30gZW5kLCBbbmFtZTogX19NT0RVTEVfX10gKysgb3B0cykKICBlbmQKCiAgQGRvYyAiIiIKICBHZXRzIGEgdGltZXN0YW1wIGZyb20gc3RvcmFnZSBieSBga2V5YC4KICAiIiIKICBkZWYgZ2V0KGtleSkgZG8KICAgIEFnZW50LmdldChfX01PRFVMRV9fLCAmTWFwLmdldCgmMSwga2V5KSkKICBlbmQKCiAgQGRvYyAiIiIKICBMaXN0IGFsbCBrZXlzIGluIHN0b3JhZ2UuCiAgIiIiCiAgZGVmIGtleXMoKSBkbwogICAgQWdlbnQuZ2V0KF9fTU9EVUxFX18sICZNYXAua2V5cygmMSkpCiAgZW5kCgogIEBkb2MgIiIiCiAgUmVtb3ZlcyB0aGUgZ2l2ZW4gYGtleWAgZnJvbSBrZXkgdmFsdWUgc3RvcmFnZS4KICAiIiIKICBkZWYgZGVsZXRlKGtleSkgZG8KICAgIEFnZW50LnVwZGF0ZShfX01PRFVMRV9fLCAmTWFwLmRlbGV0ZSgmMSwga2V5KSkKICBlbmQKCiAgQGRvYyAiIiIKICBQdXRzIGEgYHZhbHVlYCAoYnkgZGVmYXVsdCBhIHRpbWVzdGFtcCkgZm9yIHRoZSBnaXZlbiBga2V5YCBpbiBzdG9yYWdlLgogICIiIgogIGRlZiBwdXQoa2V5LCB2YWx1ZSBcXCBuaWwpIGRvCiAgICBBZ2VudC51cGRhdGUoX19NT0RVTEVfXywgJk1hcC5wdXQoJjEsIGtleSwgKHZhbHVlIHx8IERhdGVUaW1lLnV0Y19ub3cpKSkKICBlbmQKCiAgQGRvYyAiIiIKICBQdXRzIGEgdGltZXN0YW1wIGZvciB0aGUgZ2l2ZW4gYGtleWAgaW4gc3RvcmFnZS4KICBUb3VjaCBhIHJlbW90ZSBrZXkgdmFsdWUgc3RvcmFnZSBpbnN0YW5jZSBmb3IgYSBnaXZlbiBga2V5YC4KICAiIiIKICBkZWYgcmVhY2gobm9kZSwga2V5KSBkbwogICAgOnJwYy5jYWxsKG5vZGUsIF9fTU9EVUxFX18sIDpwdXQsIFtrZXldLCA2MDAwKQogIGVuZAplbmQK" \
+  | base64 --decode >./lib/key_value_storage.ex
 }
 
 inject_tailwind(){
